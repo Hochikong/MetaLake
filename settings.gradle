@@ -1,1 +1,3 @@
 rootProject.name = 'metalake'
+include 'metalake-server'
+include 'metalake-plugin'

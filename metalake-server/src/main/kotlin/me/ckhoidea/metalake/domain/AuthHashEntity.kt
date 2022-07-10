@@ -15,4 +15,5 @@ class AuthHashEntity(
     var updateTime: Date,
     @Column(unique = true)
     var hash: String,
+    var isMainHash: Boolean = false
 )

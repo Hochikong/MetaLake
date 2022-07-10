@@ -18,7 +18,7 @@
             <level>INFO</level>
         </filter>
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-            <fileNamePattern>logs/utilsapi.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <fileNamePattern>logs/api.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
             <maxHistory>5</maxHistory>
             <maxFileSize>20KB</maxFileSize>
         </rollingPolicy>

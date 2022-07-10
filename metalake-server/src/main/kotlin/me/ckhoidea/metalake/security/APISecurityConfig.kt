@@ -39,7 +39,7 @@ class APISecurityConfig(
             val secret = headerMap["Secret"] as String
             val hash = headerMap["Hash"] as String
 
-            if (hash !in hashRepo.findAll().map { it.hash }.toList()) {
+            if (hash !in hashRepo.findAll().filter { !it.isMainHash }.map { it.hash }.toList()) {
                 throw BadCredentialsException("No such hash")
             }
 
@@ -63,6 +63,7 @@ class APISecurityConfig(
         http.antMatcher("/api/**").csrf().disable().sessionManagement()
             .sessionCreationPolicy(SessionCreationPolicy.STATELESS).and().addFilter(filter).authorizeRequests()
             .anyRequest().authenticated()
+            // 实际上需要用401返回，但默认认证失败是返回403
             .and().exceptionHandling().authenticationEntryPoint(CustomNotAuthentication())
 
         return http.build()

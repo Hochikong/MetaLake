@@ -2,7 +2,10 @@ package me.ckhoidea.metalake.shell
 
 import me.ckhoidea.metalake.domain.AuthHashEntity
 import me.ckhoidea.metalake.repository.AuthHashRepository
+import me.ckhoidea.metalake.repository.LakeBindingRepository
+import me.ckhoidea.metalake.service.AccessKeyValidService
 import me.ckhoidea.metalake.service.GenerateHashService
+import me.ckhoidea.metalake.service.PasswordValidService
 import me.ckhoidea.metalake.utils.getCurrentDatetimeAsDate
 import me.ckhoidea.metalake.utils.string2MD5
 import org.springframework.beans.factory.annotation.Autowired
@@ -13,13 +16,12 @@ import org.springframework.shell.standard.ShellOption
 @ShellComponent
 
 class UserShell(
-    @Autowired hashService: GenerateHashService,
-    @Autowired authHashRepo: AuthHashRepository
+    @Autowired val hashService: GenerateHashService,
+    @Autowired val authHashRepo: AuthHashRepository,
+    @Autowired val lakeBindingRepo: LakeBindingRepository,
+    @Autowired val passValidService: PasswordValidService,
+    @Autowired val keyValidService: AccessKeyValidService
 ) {
-    private val service = hashService
-    private val authHashRepo = authHashRepo
-
-
     @ShellMethod(
         value = """
         Create new access key, token and hash
@@ -29,14 +31,9 @@ class UserShell(
         key = ["/new-token"], group = "Management"
     )
     fun newAccessToken(@ShellOption("-P", "--password") password: String) {
-        val mainHash = authHashRepo.findAll().filter { it.isMainHash }.map { it.hash }.toList()
-        if (mainHash.isNotEmpty()) {
-            if (string2MD5("FryK2njKm5:^05", password) !in mainHash) {
-                println("Error password or not exists")
-            } else {
-                service.generateNewHash()
-                println("Done, execute 'clear' to clean your input history")
-            }
+        if (passValidService.isValidPassword(password)) {
+            hashService.generateNewHash()
+            println("Done, execute 'clear' to clean your input history")
         } else {
             println("Error password or not exists")
         }
@@ -66,5 +63,33 @@ class UserShell(
         }
     }
 
+    @ShellMethod(
+        value = """
+            List all lakes by main password
+            Usage: /ls-lakes -P 1234 
+        """, key = ["/ls-lakes"], group = "Service"
+    )
+    fun lsLakes(@ShellOption("-P") password: String) {
+        if (passValidService.isValidPassword(password)) {
+            val maps = lakeBindingRepo.findAll().map {
+                mapOf(
+                    "AccessKey" to it.accessKey,
+                    "DataSource" to it.dataSource,
+                    "DataSourceDesc" to it.dataSourceDesc,
+                    "DataSourceName" to it.dataSourceName,
+                    "PluginUID" to it.pluginUID
+                )
+            }.toList()
+            for (map in maps) {
+                println("--------------------------------------------------------------------")
+                for (entry in map.entries) {
+                    println("${entry.key}: ${entry.value}")
+                }
+                println("--------------------------------------------------------------------")
+                println()
+            }
+
+        }
+    }
 
 }

@@ -6,7 +6,7 @@ import javax.persistence.*
 @Entity
 @Table(
     name = "lake_bindings",
-    indexes = [Index(name = "one_source_one_plugin", columnList = "dataSource, pluginPath")]
+//    indexes = [Index(name = "one_source_one_plugin", columnList = "dataSource, pluginUID")]
 )
 class LakeBindingEntity(
     @Id
@@ -17,14 +17,14 @@ class LakeBindingEntity(
     @Temporal(TemporalType.TIMESTAMP)
     var updateTime: Date,
 
-    @Column(unique = true)
     var accessKey: String,
     // data source url
+    @Column(unique = true)
     var dataSource: String,
     var dataSourceDesc: String,
     @Column(unique = true)
     var dataSourceName: String,
 
     // jar plugin
-    var pluginPath: String
+    var pluginUID: String
 )

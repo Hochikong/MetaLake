@@ -8,5 +8,5 @@ interface LakeBindingRepository : JpaRepository<LakeBindingEntity, Long> {
 
     fun findByDataSource(name: String): LakeBindingEntity?
 
-    fun findByPluginPath(path: String): List<LakeBindingEntity?>
+    fun findByPluginUID(uid: String): List<LakeBindingEntity?>
 }

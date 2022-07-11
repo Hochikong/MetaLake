@@ -1,0 +1,6 @@
+如果想以一个jar同一目录下的libs存放第三方驱动或jar，启动需要这样的脚本
+java -cp .\metalake-server-0.0.1-SNAPSHOT.jar;C:\Users\ckhoi\IdeaProjects\MetaLake\libs\* -Dloader.main=me.ckhoidea.metalake.MainKt org.springframework.boot.loader.PropertiesLauncher
+linux下需要把;换成:
+
+也可以在build.gradle里写(gradle 7.4)：
+runtimeOnly fileTree(dir: 'libs', include: '*.jar')

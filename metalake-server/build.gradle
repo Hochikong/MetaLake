@@ -15,6 +15,9 @@ sourceCompatibility = '11'
 repositories {
     mavenCentral()
     maven { url 'https://repo.spring.io/milestone' }
+//    flatDir {
+//        dirs 'libs'
+//    }
 }
 
 
@@ -25,6 +28,7 @@ dependencies {
     implementation 'com.fasterxml.jackson.core:jackson-core:2.13.3'
 
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-jdbc'
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.shell:spring-shell-starter'
     implementation 'org.springframework.boot:spring-boot-starter-security'
@@ -34,6 +38,9 @@ dependencies {
 
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
     runtimeOnly 'com.h2database:h2'
+    // 执行开发测试时解除注释，这个libs目录是在metalake-server/libs
+    runtimeOnly fileTree(dir: 'libs', include: '*.jar')
+
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.2'
     testImplementation 'org.junit.jupiter:junit-jupiter-params:5.8.2'

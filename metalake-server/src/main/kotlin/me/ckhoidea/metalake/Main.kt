@@ -1,6 +1,8 @@
 package me.ckhoidea.metalake
 
 
+import com.zaxxer.hikari.HikariConfig
+import com.zaxxer.hikari.HikariDataSource
 import me.ckhoidea.metalake.repository.AuthHashRepository
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -10,6 +12,7 @@ import org.springframework.boot.SpringApplication
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration
 import org.springframework.core.annotation.Order
+import org.springframework.jdbc.core.JdbcTemplate
 
 
 // 禁用默认生成密码
@@ -40,6 +43,24 @@ class MainApp(
 //        val met: Method = driver.getDeclaredMethod("plus", Int::class.java, Int::class.java)
 //        println(met.invoke(instance, 1, 2))
 //        urlClassLoader.close()
+
+        val dbDriver = "org.sqlite.JDBC"
+        val url = "jdbc:sqlite:G:\\MetaDataCenter\\djsb.db"
+//        val dataSource = DriverManagerDataSource()
+//        dataSource.url = url
+//        dataSource.setDriverClassName(dbDriver)
+//        val jdbcTemplate = JdbcTemplate(dataSource)
+//        val result = jdbcTemplate.queryForList("SELECT * FROM djs_books LIMIT 5;")
+//        println(result[0])
+
+        val config = HikariConfig()
+        config.jdbcUrl = url
+        config.poolName = "ConnectionPoolOfXX"
+        config.maximumPoolSize = 2
+        val ds = HikariDataSource(config)
+        val jdbcTemplate = JdbcTemplate(ds)
+        val result = jdbcTemplate.queryForList("SELECT * FROM djs_books LIMIT 5;")
+        println(result[0])
     }
 }
 

@@ -15,9 +15,6 @@ sourceCompatibility = '11'
 repositories {
     mavenCentral()
     maven { url 'https://repo.spring.io/milestone' }
-//    flatDir {
-//        dirs 'libs'
-//    }
 }
 
 
@@ -38,7 +35,7 @@ dependencies {
 
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
     runtimeOnly 'com.h2database:h2'
-    // 执行开发测试时解除注释，这个libs目录是在metalake-server/libs
+    // 手动添加依赖，本地开发测试需要。这个libs目录是在metalake-server/libs
     runtimeOnly fileTree(dir: 'libs', include: '*.jar')
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'

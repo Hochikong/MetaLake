@@ -35,19 +35,19 @@ compileTestKotlin {
     }
 }
 
-jar {
-    manifest {
-        // all plugin for metadata management should set these attributes. all metadata plugin should use this RootName
-        attributes 'PluginRootName': 'me.ckhoidea.metalake.share.LakePluginBase'
-        // registration name in database, unique not null
-        attributes 'PluginRegistName': 'KtMeta - AbstractMetaPlugin'
-        // class name of plugin, used by ktmeta to load this plugin
-        attributes 'PluginClassName': 'xxx'
-        attributes 'PluginVersion': '0.0.1'
-    }
-    from {
-        configurations.runtimeClasspath.collect {
-            it.isDirectory() ? it : zipTree(it)
-        }
-    }
-}
+//jar {
+//    manifest {
+//        // all plugin for metadata management should set these attributes. all metadata plugin should use this RootName
+//        attributes 'PluginRootName': 'me.ckhoidea.metalake.share.LakePluginBase'
+//        // registration name in database, unique not null
+//        attributes 'PluginRegistName': 'KtMeta - AbstractMetaPlugin'
+//        // class name of plugin, used by ktmeta to load this plugin
+//        attributes 'PluginClassName': 'xxx'
+//        attributes 'PluginVersion': '0.0.1'
+//    }
+//    from {
+//        configurations.runtimeClasspath.collect {
+//            it.isDirectory() ? it : zipTree(it)
+//        }
+//    }
+//}

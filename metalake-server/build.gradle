@@ -33,7 +33,7 @@ dependencies {
     // import BOM
     implementation platform('org.springframework.shell:spring-shell-dependencies:2.1.0-M5')
 
-    developmentOnly 'org.springframework.boot:spring-boot-devtools'
+//    developmentOnly 'org.springframework.boot:spring-boot-devtools'
     runtimeOnly 'com.h2database:h2'
     // 手动添加依赖，本地开发测试需要。这个libs目录是在metalake-server/libs
     runtimeOnly fileTree(dir: 'libs', include: '*.jar')

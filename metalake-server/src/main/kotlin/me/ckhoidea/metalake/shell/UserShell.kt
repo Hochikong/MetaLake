@@ -1,9 +1,12 @@
 package me.ckhoidea.metalake.shell
 
 import me.ckhoidea.metalake.domain.AuthHashEntity
+import me.ckhoidea.metalake.domain.LakeBindingEntity
+import me.ckhoidea.metalake.domain.PluginEntity
 import me.ckhoidea.metalake.repository.AuthHashRepository
 import me.ckhoidea.metalake.repository.AuthRepository
 import me.ckhoidea.metalake.repository.LakeBindingRepository
+import me.ckhoidea.metalake.repository.PluginRepository
 import me.ckhoidea.metalake.service.AccessKeyValidService
 import me.ckhoidea.metalake.service.GenerateHashService
 import me.ckhoidea.metalake.service.PasswordValidService
@@ -20,6 +23,7 @@ class UserShell(
     @Autowired val authRepo: AuthRepository,
     @Autowired val authHashRepo: AuthHashRepository,
     @Autowired val lakeBindingRepo: LakeBindingRepository,
+    @Autowired val pluginRepo: PluginRepository,
     @Autowired val hashService: GenerateHashService,
     @Autowired val passValidService: PasswordValidService,
     @Autowired val keyValidService: AccessKeyValidService
@@ -84,6 +88,42 @@ class UserShell(
                     "PluginUID" to it.pluginUID
                 )
             }.toList()
+            if (maps.isEmpty()) {
+                println("Empty")
+                return
+            }
+            for (map in maps) {
+                println("--------------------------------------------------------------------")
+                for (entry in map.entries) {
+                    println("${entry.key}: ${entry.value}")
+                }
+                println("--------------------------------------------------------------------")
+                println()
+            }
+
+        }
+    }
+
+    @ShellMethod(
+        value = """
+            List all plugins by main password
+            Usage: /ls-plugins -P 1234 
+            Options: -P
+        """, key = ["/ls-plugins"], group = "Service"
+    )
+    fun lsPlugins(@ShellOption("-P") password: String) {
+        if (passValidService.isValidPassword(password)) {
+            val maps = pluginRepo.findAll().map {
+                mapOf(
+                    "ID" to it.id,
+                    "JarPath" to it.jarPath,
+                    "ClassName" to it.nameClass
+                )
+            }.toList()
+            if (maps.isEmpty()) {
+                println("Empty")
+                return
+            }
             for (map in maps) {
                 println("--------------------------------------------------------------------")
                 for (entry in map.entries) {
@@ -112,6 +152,10 @@ class UserShell(
                     "AccessSecret" to it.accessSecret,
                 )
             }.toList()
+            if (maps.isEmpty()) {
+                println("Empty")
+                return
+            }
             for (map in maps) {
                 println("--------------------------------------------------------------------")
                 for (entry in map.entries) {
@@ -126,8 +170,14 @@ class UserShell(
 
     @ShellMethod(
         value = """
-            List all lakes by main password
+            Create new meta-lake
             Usage: /new-lake -P 1234 -K ACCESS_KEY -S jdbc:xxxxx -SN MyData -SD MyData's Content --plugin PLUGIN_ID 
+            Options: -P Main password
+                     -K Exists accesskey
+                     -S Data source's url
+                     -SN Data source's name
+                     -SD Data source's decription
+                     --plugin Exists plugin id (by default is empty)
         """, key = ["/new-lake"], group = "Service"
     )
     fun registerLake(
@@ -136,23 +186,53 @@ class UserShell(
         @ShellOption("-S") dataURL: String,
         @ShellOption("-SN") dataSourceName: String,
         @ShellOption("-SD") dataSourceDesc: String,
-        @ShellOption("--plugin") pluginID: String
+        @ShellOption("--plugin") pluginID: String = ""
     ) {
         if (passValidService.isValidPassword(password)) {
-            val maps = authRepo.findAll().map {
-                mapOf(
-                    "AccessKey" to it.accessKey,
-                    "AccessSecret" to it.accessSecret,
+            if (!keyValidService.isValidKey(accessKey)) {
+                println("Not exists access key!")
+            } else {
+                lakeBindingRepo.save(
+                    LakeBindingEntity(
+                        createTime = getCurrentDatetimeAsDate(),
+                        updateTime = getCurrentDatetimeAsDate(),
+                        accessKey = accessKey,
+                        dataSource = dataURL,
+                        dataSourceDesc = dataSourceDesc,
+                        dataSourceName = dataSourceName,
+                        pluginUID = pluginID
+                    )
                 )
-            }.toList()
-            for (map in maps) {
-                println("--------------------------------------------------------------------")
-                for (entry in map.entries) {
-                    println("${entry.key}: ${entry.value}")
-                }
-                println("--------------------------------------------------------------------")
-                println()
+                println("Done")
             }
+
+        }
+    }
+
+    @ShellMethod(
+        value = """
+            Register meta-lake plugin
+            Usage: /new-plugin -P 1234 -J xxx.jar -N me.xxxx.Plugin
+            Options: -P Main password
+                     -J Jar file path
+                     -N Class name of plugin
+        """, key = ["/new-plugin"], group = "Service"
+    )
+    fun registerPlugin(
+        @ShellOption("-P") password: String,
+        @ShellOption("-J") jarPath: String,
+        @ShellOption("-N") nameClass: String,
+    ) {
+        if (passValidService.isValidPassword(password)) {
+            pluginRepo.save(
+                PluginEntity(
+                    createTime = getCurrentDatetimeAsDate(),
+                    updateTime = getCurrentDatetimeAsDate(),
+                    jarPath = jarPath,
+                    nameClass = nameClass
+                )
+            )
+            println("Done")
 
         }
     }

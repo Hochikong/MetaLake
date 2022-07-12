@@ -4,3 +4,29 @@ linux下需要把;换成:
 
 也可以在build.gradle里写(gradle 7.4)：
 runtimeOnly fileTree(dir: 'libs', include: '*.jar')
+
+
+加载jar作为插件的方法：
+        val path =
+            "C:\\Users\\ckhoi\\IdeaProjects\\MetaLake\\metalake-plugin\\build\\libs\\metalake-plugin-0.0.1-SNAPSHOT.jar"
+        val absp = "file:$path"
+        val m = JarFile(path).manifest
+        val ma = m.mainAttributes
+        val classNames = ma.keys.filter { it.toString().startsWith("PluginRootName") }.map { ma[it] }.toList()
+        println(classNames)
+
+        val urlClassLoader = URLClassLoader(arrayOf(URL(absp)))
+        val driver = urlClassLoader.loadClass("me.ckhoidea.lakeplugin.SimplePlugin")
+        val instance = driver.getDeclaredConstructor().newInstance()
+        println(driver.declaredMethods.forEach { println(it.name) })
+
+        val met: Method = driver.getDeclaredMethod("plus", Int::class.java, Int::class.java)
+        println(met.invoke(instance, 1, 2))
+        urlClassLoader.close()
+
+使用插件服务后调用插件的方法：
+        val driver = pluginCentreService.getInstance("me.ckhoidea.lakeplugin.SimplePlugin")
+        if (driver != null){
+            val realDriver = driver as Class<*>
+            val instance = realDriver.getDeclaredConstructor().newInstance() as LakePluginBase
+            println(instance.translateRequests("SSS"))

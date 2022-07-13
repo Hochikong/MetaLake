@@ -13,6 +13,10 @@ class PluginEntity(
     var createTime: Date,
     @Temporal(TemporalType.TIMESTAMP)
     var updateTime: Date,
+    var version: String,
     var jarPath: String,
-    var nameClass: String
+    var nameClass: String,
+    // pluginUID通过jar路径，version与nameClass生成
+    @Column(unique = true)
+    var pluginUID: String
 )

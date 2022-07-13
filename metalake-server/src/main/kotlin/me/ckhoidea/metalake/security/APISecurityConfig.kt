@@ -26,22 +26,16 @@ class APISecurityConfig(
 ) {
     private val requireKey: String = "X-ACCESS-KEY"
     private val requireSecret: String = "X-ACCESS-SECRET"
-    private val requireHash: String = "X-ACCESS-HASH"
 
     @Bean
     @Throws(Exception::class)
     fun filterChain(http: HttpSecurity): SecurityFilterChain {
-        val filter = APIKeyAuthFilter(requireKey, requireSecret, requireHash)
+        val filter = APIKeyAuthFilter(requireKey, requireSecret)
 
         filter.setAuthenticationManager(AuthenticationManager { authentication ->
             val headerMap = authentication.principal as Map<*, *>
             val key = headerMap["Key"] as String
             val secret = headerMap["Secret"] as String
-            val hash = headerMap["Hash"] as String
-
-            if (hash !in hashRepo.findAll().filter { !it.isMainHash }.map { it.hash }.toList()) {
-                throw BadCredentialsException("No such hash")
-            }
 
             if (key !in authRepo.findAll().map { Pair(it.accessKey, it.accessSecret) }.toList().map { it.first }
                     .toList()) {

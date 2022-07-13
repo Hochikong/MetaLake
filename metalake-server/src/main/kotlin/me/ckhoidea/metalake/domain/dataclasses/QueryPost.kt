@@ -1,3 +1,3 @@
 package me.ckhoidea.metalake.domain.dataclasses
 
-data class QueryPost(val nameClass: String, val requestBody: Map<String, Any>)
+data class QueryPost(val lakeName: String, val queryBody: Map<String, Any>)

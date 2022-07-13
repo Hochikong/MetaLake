@@ -8,8 +8,9 @@ import me.ckhoidea.metalake.repository.AuthRepository
 import me.ckhoidea.metalake.repository.LakeBindingRepository
 import me.ckhoidea.metalake.repository.PluginRepository
 import me.ckhoidea.metalake.service.AccessKeyValidService
-import me.ckhoidea.metalake.service.GenerateHashService
+import me.ckhoidea.metalake.service.TokenFactoryService
 import me.ckhoidea.metalake.service.PasswordValidService
+import me.ckhoidea.metalake.utils.generateUIDByString
 import me.ckhoidea.metalake.utils.getCurrentDatetimeAsDate
 import me.ckhoidea.metalake.utils.string2MD5
 import org.springframework.beans.factory.annotation.Autowired
@@ -24,26 +25,26 @@ class UserShell(
     @Autowired val authHashRepo: AuthHashRepository,
     @Autowired val lakeBindingRepo: LakeBindingRepository,
     @Autowired val pluginRepo: PluginRepository,
-    @Autowired val hashService: GenerateHashService,
+    @Autowired val tokenService: TokenFactoryService,
     @Autowired val passValidService: PasswordValidService,
     @Autowired val keyValidService: AccessKeyValidService
 ) {
-    @ShellMethod(
-        value = """
-        Create new access key, token and hash
-        Usage: /new-token -password 1234
-        Options: -P/--password 
-                         """,
-        key = ["/new-token"], group = "Management"
-    )
-    fun newAccessToken(@ShellOption("-P", "--password") password: String) {
-        if (passValidService.isValidPassword(password)) {
-            hashService.generateNewHash()
-            println("Done, execute 'clear' to clean your input history")
-        } else {
-            println("Error password or not exists")
-        }
-    }
+//    @ShellMethod(
+//        value = """
+//        Create new access key, token and hash
+//        Usage: /new-token -password 1234
+//        Options: -P/--password
+//                         """,
+//        key = ["/new-token"], group = "Management"
+//    )
+//    fun newAccessToken(@ShellOption("-P", "--password") password: String) {
+//        if (passValidService.isValidPassword(password)) {
+//            hashService.generateNewHash()
+//            println("Done, execute 'clear' to clean your input history")
+//        } else{
+//            println("Password error or main password not exists")
+//        }
+//    }
 
     @ShellMethod(
         value = """
@@ -101,6 +102,8 @@ class UserShell(
                 println()
             }
 
+        } else {
+            println("Password error or main password not exists")
         }
     }
 
@@ -133,6 +136,8 @@ class UserShell(
                 println()
             }
 
+        } else {
+            println("Password error or main password not exists")
         }
     }
 
@@ -165,75 +170,102 @@ class UserShell(
                 println()
             }
 
+        } else {
+            println("Password error or main password not exists")
         }
     }
 
     @ShellMethod(
         value = """
             Create new meta-lake
-            Usage: /new-lake -P 1234 -K ACCESS_KEY -S jdbc:xxxxx -SN MyData -SD MyData's Content --plugin PLUGIN_ID 
+            Usage: /new-lake -P 1234 -S jdbc:xxxxx -SN MyData -SD MyData's Content --plugin PLUGIN_UID --cred JACK:JACKPASSWORD
             Options: -P Main password
-                     -K Exists accesskey
                      -S Data source's url
                      -SN Data source's name
                      -SD Data source's decription
-                     --plugin Exists plugin id (by default is empty)
+                     --plugin Exists plugin uuid (by default is empty)
+                     --cred USERNAME:PASSWORD
         """, key = ["/new-lake"], group = "Service"
     )
     fun registerLake(
         @ShellOption("-P") password: String,
-        @ShellOption("-K") accessKey: String,
         @ShellOption("-S") dataURL: String,
-        @ShellOption("-SN") dataSourceName: String,
-        @ShellOption("-SD") dataSourceDesc: String,
-        @ShellOption("--plugin") pluginID: String = ""
+        @ShellOption("-N") dataSourceName: String,
+        @ShellOption("-D") dataSourceDesc: String,
+        @ShellOption("--plugin", defaultValue = "") pluginID: String,
+        @ShellOption("--cred", defaultValue = "") cred: String
     ) {
         if (passValidService.isValidPassword(password)) {
-            if (!keyValidService.isValidKey(accessKey)) {
-                println("Not exists access key!")
+            val token = tokenService.generateNewAccessToken()
+            println("You accessKey is ${token["Key"]}, secret is ${token["Secret"]}")
+            if (":" in cred) {
+                val dbUsername = cred.split(":")[0]
+                val dbPassword = cred.split(":")[1]
+                lakeBindingRepo.save(
+                    LakeBindingEntity(
+                        createTime = getCurrentDatetimeAsDate(),
+                        updateTime = getCurrentDatetimeAsDate(),
+                        accessKey = token["Key"]!!,
+                        dataSource = dataURL,
+                        dataSourceDesc = dataSourceDesc,
+                        dataSourceName = dataSourceName,
+                        pluginUID = pluginID,
+                        username = dbUsername,
+                        password = dbPassword
+                    )
+                )
             } else {
                 lakeBindingRepo.save(
                     LakeBindingEntity(
                         createTime = getCurrentDatetimeAsDate(),
                         updateTime = getCurrentDatetimeAsDate(),
-                        accessKey = accessKey,
+                        accessKey = token["Key"]!!,
                         dataSource = dataURL,
                         dataSourceDesc = dataSourceDesc,
                         dataSourceName = dataSourceName,
                         pluginUID = pluginID
                     )
                 )
-                println("Done")
             }
-
+            println("Done")
+        } else {
+            println("Password error or main password not exists")
         }
     }
 
     @ShellMethod(
         value = """
             Register meta-lake plugin
-            Usage: /new-plugin -P 1234 -J xxx.jar -N me.xxxx.Plugin
+            Usage: /new-plugin -P 1234 -J "C:\\\PATH\\\xxx.jar" -N me.xxxx.Plugin -V "1.20"
             Options: -P Main password
                      -J Jar file path
                      -N Class name of plugin
+                     -V Version
         """, key = ["/new-plugin"], group = "Service"
     )
     fun registerPlugin(
         @ShellOption("-P") password: String,
         @ShellOption("-J") jarPath: String,
         @ShellOption("-N") nameClass: String,
+        @ShellOption("-V") version: String
     ) {
         if (passValidService.isValidPassword(password)) {
+            val pluginUID = generateUIDByString("$jarPath $nameClass")
             pluginRepo.save(
                 PluginEntity(
                     createTime = getCurrentDatetimeAsDate(),
                     updateTime = getCurrentDatetimeAsDate(),
                     jarPath = jarPath,
-                    nameClass = nameClass
+                    nameClass = nameClass,
+                    pluginUID = pluginUID,
+                    version = version
                 )
             )
+            println("Plugin UID is: $pluginUID")
             println("Done")
 
+        } else {
+            println("Password error or main password not exists")
         }
     }
 

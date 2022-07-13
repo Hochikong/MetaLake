@@ -1,7 +1,6 @@
 package me.ckhoidea.metalake.service
 
 import me.ckhoidea.metalake.repository.PluginRepository
-import me.ckhoidea.metalake.share.LakePluginBase
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import java.net.URL
@@ -20,7 +19,8 @@ class PluginCentreService(
                 val result = this.loadPlugin(cfg.first, cfg.second)
                 pluginInstances.add(result)
             } catch (e: Exception) {
-                println("Loading ${cfg.first} Error: ${e.printStackTrace()}")
+                println("Loading ${cfg.first} Error: \n")
+                e.printStackTrace()
             }
         }
     }

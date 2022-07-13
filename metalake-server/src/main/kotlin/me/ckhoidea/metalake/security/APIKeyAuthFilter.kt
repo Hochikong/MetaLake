@@ -14,13 +14,12 @@ import javax.servlet.http.HttpServletRequest
  *
  * 提取header中的指定字段
  * */
-class APIKeyAuthFilter(private val accessKey: String, private val accessSecret: String, private val hash: String) :
+class APIKeyAuthFilter(private val accessKey: String, private val accessSecret: String) :
     AbstractPreAuthenticatedProcessingFilter() {
     override fun getPreAuthenticatedPrincipal(request: HttpServletRequest): Map<String, String> {
         return mapOf(
             "Key" to request.getHeader(accessKey),
             "Secret" to request.getHeader(accessSecret),
-            "Hash" to request.getHeader(hash)
         )
     }
 

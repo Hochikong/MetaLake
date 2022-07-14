@@ -8,5 +8,5 @@ public interface LakePluginInterface {
      */
     public String translateRequests(Map<String, Object> req);
 
-    public Map<String, Object> castResponse(Object response);
+    public Object castResponse(Object response);
 }

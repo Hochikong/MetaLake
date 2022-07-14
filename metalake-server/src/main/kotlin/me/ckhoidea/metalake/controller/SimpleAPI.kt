@@ -31,11 +31,8 @@ class SimpleAPI(
 
     @PostMapping("/api/test1", produces = ["application/json"])
     fun testPost(@RequestBody qp: QueryPost): Map<String, Any> {
-//        println(qp)
         val ds = dataSourceService.newConnectionPool(qp.lakeName) as HikariDataSource
         val jdbcTemplate = JdbcTemplate(ds)
-        val result = jdbcTemplate.queryForList("SELECT * FROM djs_books LIMIT 5;")
-        println(result[0])
 
         val lake = lakeBindingRepo.findByDataSourceName(qp.lakeName)
         if (lake != null) {
@@ -48,13 +45,18 @@ class SimpleAPI(
                 val realDriver = driver as Class<*>
                 val instance = realDriver.getDeclaredConstructor().newInstance() as LakePluginInterface
                 val sql = instance.translateRequests(qp.queryBody)
-                println(sql)
-                // blob自动转成base64
-                val queryResult = jdbcTemplate.queryForList(sql)
-                return mapOf(
-                    "status" to 200,
-                    "result" to instance.castResponse(queryResult)
-                )
+                return if (sql != "ERROR") {
+                    val queryResult = jdbcTemplate.queryForList(sql)
+                    mapOf(
+                        "status" to 200,
+                        "result" to instance.castResponse(queryResult)
+                    )
+                } else {
+                    mapOf(
+                        "status" to 200,
+                        "result" to "NO_DATA"
+                    )
+                }
             }
 
             return mapOf(

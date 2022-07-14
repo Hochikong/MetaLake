@@ -1,7 +1,11 @@
 package me.ckhoidea.lakeplugin
 
 import me.ckhoidea.metalake.share.LakePluginInterface
-import kotlin.reflect.typeOf
+import java.awt.image.BufferedImage
+import java.io.ByteArrayInputStream
+import java.io.File
+import javax.imageio.ImageIO
+
 
 class SimplePlugin : LakePluginInterface {
     override fun translateRequests(req: MutableMap<String, Any>): String {
@@ -31,12 +35,14 @@ class SimplePlugin : LakePluginInterface {
         }
     }
 
-    override fun castResponse(response: Any?): Map<String, Any> {
-        val result = response!! as List<Map<String, *>>
-        for (book in result) {
-            book.map { println(it.value!!::class.java.typeName) }
-            book.map { println(it.value) }
-        }
-        return mapOf("R" to response!!)
+    override fun castResponse(response: Any?): Any {
+//        val result = response!! as List<Map<String, *>>
+//        for (book in result) {
+//            val bis = ByteArrayInputStream(book["preview"] as ByteArray?)
+//            val bImage2: BufferedImage = ImageIO.read(bis)
+//            ImageIO.write(bImage2, "png", File("output.png"))
+//
+//        }
+        return response ?: "NO_DATA"
     }
 }

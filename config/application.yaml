@@ -17,4 +17,4 @@ spring:
     hibernate.ddl-auto: update
 
 web:
-  enable_debug: false
+  enable_debug: true

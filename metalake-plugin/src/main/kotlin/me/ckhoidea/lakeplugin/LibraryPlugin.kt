@@ -1,13 +1,9 @@
 package me.ckhoidea.lakeplugin
 
 import me.ckhoidea.metalake.share.LakePluginInterface
-import java.awt.image.BufferedImage
-import java.io.ByteArrayInputStream
-import java.io.File
-import javax.imageio.ImageIO
 
 
-class SimplePlugin : LakePluginInterface {
+class LibraryPlugin : LakePluginInterface {
     override fun translateRequests(req: MutableMap<String, Any>): String {
         try {
             val associatePropertyAndValue: Map<String, String> =

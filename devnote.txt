@@ -16,7 +16,7 @@ runtimeOnly fileTree(dir: 'libs', include: '*.jar')
         println(classNames)
 
         val urlClassLoader = URLClassLoader(arrayOf(URL(absp)))
-        val driver = urlClassLoader.loadClass("me.ckhoidea.lakeplugin.SimplePlugin")
+        val driver = urlClassLoader.loadClass("me.ckhoidea.lakeplugin.LibraryPlugin")
         val instance = driver.getDeclaredConstructor().newInstance()
         println(driver.declaredMethods.forEach { println(it.name) })
 
@@ -25,7 +25,7 @@ runtimeOnly fileTree(dir: 'libs', include: '*.jar')
         urlClassLoader.close()
 
 使用插件服务后调用插件的方法：
-        val driver = pluginCentreService.getInstance("me.ckhoidea.lakeplugin.SimplePlugin")
+        val driver = pluginCentreService.getInstance("me.ckhoidea.lakeplugin.LibraryPlugin")
         if (driver != null){
             val realDriver = driver as Class<*>
             val instance = realDriver.getDeclaredConstructor().newInstance() as LakePluginBase

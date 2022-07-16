@@ -1,6 +1,9 @@
 package me.ckhoidea.metalake.service
 
+import me.ckhoidea.metalake.controller.SimpleAPI
 import me.ckhoidea.metalake.repository.PluginRepository
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import java.net.URL
@@ -10,6 +13,7 @@ import java.net.URLClassLoader
 class PluginCentreService(
     @Autowired val pluginRepo: PluginRepository
 ) {
+    private val logger: Logger = LoggerFactory.getLogger(PluginCentreService::class.java)
     val pluginInstances = mutableListOf<Pair<String, Any>>()
 
     fun initAllPlugins() {
@@ -18,8 +22,9 @@ class PluginCentreService(
             try {
                 val result = this.loadPlugin(cfg.first, cfg.second)
                 pluginInstances.add(result)
+                logger.info("Init plugin: ${cfg.first}")
             } catch (e: Exception) {
-                println("Loading ${cfg.first} Error: \n")
+                logger.error("Loading ${cfg.first} Error: \n")
                 e.printStackTrace()
             }
         }

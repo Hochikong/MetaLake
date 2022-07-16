@@ -4,6 +4,8 @@ import me.ckhoidea.metalake.domain.AuthEntity
 import me.ckhoidea.metalake.repository.AuthRepository
 import me.ckhoidea.metalake.utils.PasswordGenerator.PasswordGeneratorBuilder
 import me.ckhoidea.metalake.utils.getCurrentDatetimeAsDate
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 
@@ -17,6 +19,7 @@ class TokenFactoryService(
 //    @Autowired
 //    val authHashRepo: AuthHashRepository
 ) {
+    private val logger: Logger = LoggerFactory.getLogger(TokenFactoryService::class.java)
     fun generateNewAccessToken(): Map<String, String> {
         val passwordGenerator = PasswordGeneratorBuilder()
             .useDigits(true)
@@ -24,6 +27,7 @@ class TokenFactoryService(
             .useUpper(true)
             .build()
         val accessKey = passwordGenerator.generate(50)
+        logger.info("Create new Access Key: ${accessKey.slice(0..5)}")
         val accessSecret = passwordGenerator.generate(70)
 
 // 2022-07-14 停掉Hash的功能

@@ -9,6 +9,8 @@ import me.ckhoidea.metalake.service.DataSourceService
 import me.ckhoidea.metalake.service.PluginCentreService
 import me.ckhoidea.metalake.share.LakePluginInterface
 import me.ckhoidea.metalake.utils.exceptionToString
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.jdbc.core.JdbcTemplate
@@ -22,14 +24,14 @@ class SimpleAPI(
     @Autowired val lakeBindingRepo: LakeBindingRepository,
     @Autowired val pluginRepo: PluginRepository,
 ) {
+    private val logger: Logger = LoggerFactory.getLogger(SimpleAPI::class.java)
+
     @Value("\${web.enable_debug}")
     private var enableDebug = false
 
     @PostMapping("/query/simple", produces = ["application/json"])
     fun simpleHandler(@RequestBody qp: QueryPost): Map<String, Any> {
-        val ds = dataSourceService.newConnectionPool(qp.lakeName) as HikariDataSource
-        val jdbcTemplate = JdbcTemplate(ds)
-
+        logger.info("Endpoint: /query/simple, Lake: ${qp.lakeName}")
         val lake = lakeBindingRepo.findByDataSourceName(qp.lakeName)
         if (lake != null) {
             val plugin = pluginRepo.findByPluginUID(lake.pluginUID) ?: return mapOf(
@@ -39,6 +41,9 @@ class SimpleAPI(
 
             val driver = pluginCentreService.getInstance(plugin.nameClass)
             if (driver != null) {
+                val ds = dataSourceService.newConnectionPool(qp.lakeName) as HikariDataSource
+                val jdbcTemplate = JdbcTemplate(ds)
+
                 val realDriverClass = driver as Class<*>
                 val driverInstance = realDriverClass.getDeclaredConstructor().newInstance() as LakePluginInterface
                 val sql = driverInstance.translateRequests(qp.queryBody)
@@ -56,19 +61,12 @@ class SimpleAPI(
                         )
                     }
                 } catch (e: Exception) {
-                    if (enableDebug) {
-                        val (sw, pw) = exceptionToString()
-                        e.printStackTrace(pw)
-                        mapOf(
-                            "code" to 500,
-                            "error" to sw.buffer
-                        )
-                    } else {
-                        mapOf(
-                            "code" to 500,
-                            "error" to "Internal error"
-                        )
-                    }
+                    val (sw, pw) = exceptionToString()
+                    e.printStackTrace(pw)
+                    mapOf(
+                        "code" to 500,
+                        "error" to if (enableDebug) sw.buffer else "Internal error"
+                    )
                 }
             }
 
@@ -79,7 +77,8 @@ class SimpleAPI(
         }
 
         return mapOf(
-            "status" to 403
+            "status" to 403,
+            "error" to if (enableDebug) "No such lake" else "Denied"
         )
     }
 }

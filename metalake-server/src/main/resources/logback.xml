@@ -11,7 +11,7 @@
         </layout>
     </appender>
 
-    <appender name="UtilsAPI" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <appender name="APIAppender" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <!--        <file>logs/ktmeta-dgmgmt.log</file>-->
         <prudent>true</prudent>
         <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
@@ -28,8 +28,40 @@
         </encoder>
     </appender>
 
-    <logger name="me.ckho.scriptscompose.controller.APIController" level="info" additivity="false">
-        <appender-ref ref="UtilsAPI"/>
+    <appender name="ServiceAppender" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <!--        <file>logs/ktmeta-dgmgmt.log</file>-->
+        <prudent>true</prudent>
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>INFO</level>
+        </filter>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>logs/services.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <maxHistory>5</maxHistory>
+            <maxFileSize>20KB</maxFileSize>
+        </rollingPolicy>
+        <encoder>
+            <!--            <pattern>%date %-5level [%thread] %logger{10} [%file:%line] -> %msg%n %n</pattern>-->
+            <pattern>[%date][%-5level] [%thread][%M][%file:%line] -> %msg%n %n</pattern>
+        </encoder>
+    </appender>
+
+    <logger name="me.ckhoidea.metalake.controller.SimpleAPI" level="info" additivity="false">
+        <appender-ref ref="APIAppender"/>
+        <appender-ref ref="STDOUT"/>
+    </logger>
+
+    <logger name="me.ckhoidea.metalake.service.TokenFactoryService" level="info" additivity="false">
+        <appender-ref ref="ServiceAppender"/>
+        <appender-ref ref="STDOUT"/>
+    </logger>
+
+    <logger name="me.ckhoidea.metalake.service.PluginCentreService" level="info" additivity="false">
+        <appender-ref ref="ServiceAppender"/>
+        <appender-ref ref="STDOUT"/>
+    </logger>
+
+    <logger name="me.ckhoidea.metalake.service.DataSourceService" level="info" additivity="false">
+        <appender-ref ref="ServiceAppender"/>
         <appender-ref ref="STDOUT"/>
     </logger>
 

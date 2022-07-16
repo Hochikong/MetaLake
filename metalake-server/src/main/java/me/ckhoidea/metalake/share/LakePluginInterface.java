@@ -8,5 +8,8 @@ public interface LakePluginInterface {
      */
     public String translateRequests(Map<String, Object> req);
 
+    /**
+     * 转换输出结果
+     */
     public Object castResponse(Object response);
 }

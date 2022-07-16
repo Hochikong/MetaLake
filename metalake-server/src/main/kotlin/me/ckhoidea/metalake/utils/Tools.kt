@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.KotlinFeature
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import org.springframework.util.DigestUtils
+import java.io.PrintWriter
+import java.io.StringWriter
 import java.math.BigInteger
 import java.security.MessageDigest
 import java.time.Instant
@@ -49,4 +51,21 @@ fun generateUIDByString(input: String): String {
         hashtext = "0$hashtext"
     }
     return hashtext
+}
+
+/**
+ * Usage：
+ * }catch (e: Exception){
+ *     if (enableDebug){
+ *         val (sw, pw) = exceptionToString()
+ *         e.printStackTrace(pw)
+ *         return mapOf(
+ *                    "code" to 500,
+ *                    "error" to sw.buffer
+ *                     )
+ *
+ * */
+fun exceptionToString(): Pair<StringWriter, PrintWriter> {
+    val sw = StringWriter();
+    return Pair(sw, PrintWriter(sw))
 }

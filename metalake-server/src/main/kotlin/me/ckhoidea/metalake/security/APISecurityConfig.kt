@@ -54,7 +54,7 @@ class APISecurityConfig(
             authentication
         })
 
-        http.antMatcher("/api/**").csrf().disable().sessionManagement()
+        http.antMatcher("/query/**").csrf().disable().sessionManagement()
             .sessionCreationPolicy(SessionCreationPolicy.STATELESS).and().addFilter(filter).authorizeRequests()
             .anyRequest().authenticated()
             // 实际上需要用401返回，但默认认证失败是返回403

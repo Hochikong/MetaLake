@@ -8,11 +8,11 @@ import me.ckhoidea.metalake.repository.PluginRepository
 import me.ckhoidea.metalake.service.DataSourceService
 import me.ckhoidea.metalake.service.PluginCentreService
 import me.ckhoidea.metalake.share.LakePluginInterface
-import org.apache.tomcat.util.http.fileupload.IOUtils
+import me.ckhoidea.metalake.utils.exceptionToString
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.web.bind.annotation.*
-import java.io.IOException
 
 
 @RestController
@@ -22,50 +22,64 @@ class SimpleAPI(
     @Autowired val lakeBindingRepo: LakeBindingRepository,
     @Autowired val pluginRepo: PluginRepository,
 ) {
-    @GetMapping("/api/test", produces = ["application/json"])
-    fun test(): Map<String, Any> {
-        return mapOf(
-            "status" to 200
-        )
-    }
+    @Value("\${web.enable_debug}")
+    private var enableDebug = false
 
-    @PostMapping("/api/test1", produces = ["application/json"])
-    fun testPost(@RequestBody qp: QueryPost): Map<String, Any> {
+    @PostMapping("/query/simple", produces = ["application/json"])
+    fun simpleHandler(@RequestBody qp: QueryPost): Map<String, Any> {
         val ds = dataSourceService.newConnectionPool(qp.lakeName) as HikariDataSource
         val jdbcTemplate = JdbcTemplate(ds)
 
         val lake = lakeBindingRepo.findByDataSourceName(qp.lakeName)
         if (lake != null) {
             val plugin = pluginRepo.findByPluginUID(lake.pluginUID) ?: return mapOf(
-                "status" to 500
+                "code" to 404,
+                "msg" to "Lake's plugin not found"
             )
 
             val driver = pluginCentreService.getInstance(plugin.nameClass)
             if (driver != null) {
-                val realDriver = driver as Class<*>
-                val instance = realDriver.getDeclaredConstructor().newInstance() as LakePluginInterface
-                val sql = instance.translateRequests(qp.queryBody)
-                return if (sql != "ERROR") {
-                    val queryResult = jdbcTemplate.queryForList(sql)
-                    mapOf(
-                        "status" to 200,
-                        "result" to instance.castResponse(queryResult)
-                    )
-                } else {
-                    mapOf(
-                        "status" to 200,
-                        "result" to "NO_DATA"
-                    )
+                val realDriverClass = driver as Class<*>
+                val driverInstance = realDriverClass.getDeclaredConstructor().newInstance() as LakePluginInterface
+                val sql = driverInstance.translateRequests(qp.queryBody)
+                return try {
+                    if (sql != "ERROR") {
+                        val queryResult = jdbcTemplate.queryForList(sql)
+                        mapOf(
+                            "code" to 200,
+                            "result" to driverInstance.castResponse(queryResult)
+                        )
+                    } else {
+                        mapOf(
+                            "code" to 200,
+                            "result" to "NO_DATA"
+                        )
+                    }
+                } catch (e: Exception) {
+                    if (enableDebug) {
+                        val (sw, pw) = exceptionToString()
+                        e.printStackTrace(pw)
+                        mapOf(
+                            "code" to 500,
+                            "error" to sw.buffer
+                        )
+                    } else {
+                        mapOf(
+                            "code" to 500,
+                            "error" to "Internal error"
+                        )
+                    }
                 }
             }
 
             return mapOf(
-                "status" to 200
+                "status" to 500,
+                "msg" to "Driver null"
             )
         }
 
         return mapOf(
-            "status" to 500
+            "status" to 403
         )
     }
 }

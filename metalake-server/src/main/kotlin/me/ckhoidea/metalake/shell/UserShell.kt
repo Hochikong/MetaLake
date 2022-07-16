@@ -86,7 +86,8 @@ class UserShell(
                     "DataSource" to it.dataSource,
                     "DataSourceDesc" to it.dataSourceDesc,
                     "DataSourceName" to it.dataSourceName,
-                    "PluginUID" to it.pluginUID
+                    "PluginUID" to it.pluginUID,
+                    "Username" to it.username
                 )
             }.toList()
             if (maps.isEmpty()) {
@@ -120,7 +121,8 @@ class UserShell(
                 mapOf(
                     "ID" to it.id,
                     "JarPath" to it.jarPath,
-                    "ClassName" to it.nameClass
+                    "ClassName" to it.nameClass,
+                    "PluginUID" to it.pluginUID
                 )
             }.toList()
             if (maps.isEmpty()) {
@@ -269,4 +271,56 @@ class UserShell(
         }
     }
 
+    @ShellMethod(
+        value = """
+            Delete meta-lake plugin
+            Usage: /delete-plugin -P 1234 -I PLUGIN_UID
+            Options: -P Main password
+                     -I Plugin UID
+        """, key = ["/delete-plugin"], group = "Service"
+    )
+    fun deletePlugin(
+        @ShellOption("-P") password: String,
+        @ShellOption("-I") pluginUID: String,
+    ) {
+        if (passValidService.isValidPassword(password)) {
+            val allUsingUID = lakeBindingRepo.findAll().map { it.pluginUID }.toSet()
+            if (pluginUID in allUsingUID) {
+                println("Plugin `$pluginUID` is used by exists lake(s) can't be deleted")
+            } else {
+                pluginRepo.deleteByPluginUID(pluginUID)
+                println("Done")
+            }
+
+
+        } else {
+            println("Password error or main password not exists")
+        }
+    }
+
+    @ShellMethod(
+        value = """
+            Delete meta-lake
+            Usage: /delete-lake -P 1234 -N LAKE_NAME    
+            Options: -P Main password
+                     -N Lake name
+        """, key = ["/delete-lake"], group = "Service"
+    )
+    fun deleteLake(
+        @ShellOption("-P") password: String,
+        @ShellOption("-N") lakeName: String,
+    ) {
+        if (passValidService.isValidPassword(password)) {
+            val allLake = lakeBindingRepo.findAll().map { it.dataSourceName }.toSet()
+            if (lakeName in allLake) {
+                lakeBindingRepo.deleteByDataSourceName(lakeName)
+                println("Lake `$lakeName` deleted")
+                println("Done")
+            } else {
+                println("No such lake `$lakeName`")
+            }
+        } else {
+            println("Password error or main password not exists")
+        }
+    }
 }

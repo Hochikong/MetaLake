@@ -25,6 +25,10 @@ class SimpleAPI(
     @Autowired val pluginRepo: PluginRepository,
 ) {
     private val logger: Logger = LoggerFactory.getLogger(SimpleAPI::class.java)
+    private val notAllowSQLSegments = listOf(
+        "update", "delete",
+        "truncate", "insert", "create", "alter", "drop", "comment", "rename", "merge", "call", "explain"
+    )
 
     @Value("\${web.enable_debug}")
     private var enableDebug = false
@@ -47,6 +51,15 @@ class SimpleAPI(
                 val realDriverClass = driver as Class<*>
                 val driverInstance = realDriverClass.getDeclaredConstructor().newInstance() as LakePluginInterface
                 val sql = driverInstance.translateRequests(qp.queryBody)
+                for (nAL in notAllowSQLSegments) {
+                    if (nAL in sql.lowercase()) {
+                        return mapOf(
+                            "code" to 403,
+                            "error" to "Only query allowed"
+                        )
+                    }
+                }
+
                 return try {
                     if (sql != "ERROR") {
                         val queryResult = jdbcTemplate.queryForList(sql)

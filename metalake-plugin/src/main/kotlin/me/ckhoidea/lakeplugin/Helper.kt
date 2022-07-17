@@ -113,7 +113,8 @@ object Helper {
             {
             	"lakeName": "Doujinshi",
             	"queryBody": {
-            		"query": "SELECT * FROM xxxx",
+            		"query": "SQL",
+                    "statement": "SELECT * FROM xxxx"
             	}
             }
             

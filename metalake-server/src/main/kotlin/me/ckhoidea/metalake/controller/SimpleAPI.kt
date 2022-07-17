@@ -65,7 +65,7 @@ class SimpleAPI(
                         val queryResult = jdbcTemplate.queryForList(sql)
                         mapOf(
                             "code" to 200,
-                            "result" to driverInstance.castResponse(queryResult)
+                            "result" to driverInstance.castResponse(queryResult, mapOf("Key" to "TEST"))
                         )
                     } else {
                         mapOf(
@@ -78,7 +78,7 @@ class SimpleAPI(
                     e.printStackTrace(pw)
                     mapOf(
                         "code" to 500,
-                        "error" to if (enableDebug) sw.buffer else "Internal error"
+                        "error" to if (enableDebug) sw.buffer.toString() else "Internal error"
                     )
                 }
             }

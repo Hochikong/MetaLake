@@ -11,5 +11,5 @@ public interface LakePluginInterface {
     /**
      * 转换输出结果
      */
-    public Object castResponse(Object response);
+    public Object castResponse(Object response, Map<String, Object> param);
 }

@@ -1,37 +1,40 @@
 package me.ckhoidea.lakeplugin
 
+import me.ckhoidea.lakeplugin.Utils.exceptionToString
 import me.ckhoidea.metalake.share.LakePluginInterface
 
 
 class LibraryPlugin : LakePluginInterface {
-    override fun translateRequests(req: MutableMap<String, Any>): String {
+    override fun translateRequests(req: Map<String, Any>): String {
         try {
-            val associatePropertyAndValue: Map<String, String> =
-                (req["djs_associate"] ?: mapOf<String, String>()) as Map<String, String>
-            val conditions = associatePropertyAndValue.map { Pair(it.key, it.value) }.toList()
-
-            if (conditions.isNotEmpty()) {
-                var conditionSTMT = "WHERE "
-                for (i in conditions.indices) {
-                    conditionSTMT += if (i == 0) {
-                        "(property = '${conditions[i].first}' AND p_value LIKE '%${conditions[i].second}%') "
-//                    } else if (i == (conditions.size - 1)) {
-//                        "AND (property = '${conditions[i].first}' AND p_value LIKE '%${conditions[i].second}%') "
-                    } else {
-                        "AND (property = '${conditions[i].first}' AND p_value LIKE '%${conditions[i].second}%') "
-                    }
+            return when (req["query"] as String) {
+                "conditions" -> {
+                    ""
                 }
-
-                return "SELECT * FROM djs_books WHERE gallery_id IN (SELECT gallery_id FROM djs_associate $conditionSTMT);"
+                "preview" -> {
+                    "SELECT preview, secondary_preview FROM djs_books WHERE gallery_id = ${req["galleryID"] as String}"
+                }
+                "associateMeta" -> {
+                    "SELECT * FROM djs_associate WHERE gallery_id = ${req["galleryID"] as String}"
+                }
+                "subQuery" -> {
+                    ""
+                }
+                "SQL" -> {
+                    req["statement"] as String
+                }
+                else -> {
+                    "SELECT * FROM djs_books limit 1;"
+                }
             }
-            return "SELECT * FROM djs_books LIMIT 5;"
         } catch (e: Exception) {
-            e.printStackTrace()
-            return "ERROR"
+            val (x, y) = exceptionToString()
+            e.printStackTrace(y)
+            return x.buffer.toString()
         }
     }
 
-    override fun castResponse(response: Any?): Any {
+    override fun castResponse(response: Any?, param: MutableMap<String, Any>?): Any {
 //        val result = response!! as List<Map<String, *>>
 //        for (book in result) {
 //            val bis = ByteArrayInputStream(book["preview"] as ByteArray?)

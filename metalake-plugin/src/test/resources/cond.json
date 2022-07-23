@@ -1,0 +1,39 @@
+{
+  "lakeName": "Doujinshi",
+  "queryBody": {
+    "query": "conditions",
+    "match": [
+      {
+        "conj": "AND",
+        "rules": [
+          {
+            "conj": "AND",
+            "column": "nickname",
+            "how": "LIKE",
+            "type": "str",
+            "value": "SSS"
+          }
+        ]
+      },
+      {
+        "conj": "OR",
+        "rules": [
+          {
+            "conj": "AND",
+            "column": "uid",
+            "how": "MATCH",
+            "type": "int",
+            "value": "123455"
+          },
+          {
+            "conj": "OR",
+            "column": "title",
+            "how": "LIKE",
+            "type": "str",
+            "value": "THIS IS TITLE"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -65,7 +65,10 @@ class SimpleAPI(
                         val queryResult = jdbcTemplate.queryForList(sql)
                         mapOf(
                             "code" to 200,
-                            "result" to driverInstance.castResponse(queryResult, mapOf("Key" to "TEST"))
+                            "result" to driverInstance.castResponse(
+                                queryResult,
+                                mapOf("queryType" to qp.queryBody["query"])
+                            )
                         )
                     } else {
                         mapOf(

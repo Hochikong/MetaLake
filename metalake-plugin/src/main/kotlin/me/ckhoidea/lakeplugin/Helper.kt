@@ -72,7 +72,7 @@ object Helper {
             
             4. 复杂条件查询
             对应的SQL: 
-            select * from djs_books where WHERE gallery_id IN (
+            select * from djs_books where gallery_id IN (
                 select distinct gallery_id from djs_associate WHERE (property = 'Artists' AND p_value in ('A', 'B', 'C')) 
                 OR (property = 'Artists' AND p_value = 'Somebody') OR (property = 'Parodies' AND p_value = 'GAL')
             )
@@ -114,7 +114,7 @@ object Helper {
             	"lakeName": "Doujinshi",
             	"queryBody": {
             		"query": "SQL",
-                    "statement": "SELECT * FROM xxxx"
+                    "statement": "SELECT * FROM djs_associate WHERE gallery_id = 198557"
             	}
             }
             

@@ -1,0 +1,30 @@
+{
+  "lakeName": "Doujinshi",
+  "queryBody": {
+    "query": "subQuery",
+    "match": [
+      {
+        "property": "Tags",
+        "how": "IN",
+        "type": "list",
+        "p_value": [
+          "A",
+          "B",
+          "C"
+        ]
+      },
+      {
+        "property": "Artists",
+        "how": "MATCH",
+        "type": "str",
+        "p_value": "Somebody"
+      },
+      {
+        "property": "Parodies",
+        "how": "LIKE",
+        "type": "str",
+        "p_value": "GAL"
+      }
+    ]
+  }
+}
